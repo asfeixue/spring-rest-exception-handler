@@ -15,6 +15,7 @@
  */
 package cz.jirutka.spring.exhandler.support;
 
+import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
@@ -64,6 +65,16 @@ public abstract class HttpMessageConverterUtils {
     }
 
     /**
+     * Determine whether a fastjson is present on the classpath and can be loaded. Will return
+     * <tt>false</tt> if either the {@link com.alibaba.fastjson.JSON} or one of its dependencies is not
+     * present or cannot be loaded.
+     * @return
+     */
+    public static boolean isFastJsonPresent() {
+        return ClassUtils.isPresent("com.alibaba.fastjson.JSON", CLASSLOADER);
+    }
+
+    /**
      * Returns default {@link HttpMessageConverter} instances, i.e.:
      *
      * <ul>
@@ -72,6 +83,7 @@ public abstract class HttpMessageConverterUtils {
      *     <li>{@linkplain ResourceHttpMessageConverter}</li>
      *     <li>{@linkplain Jaxb2RootElementHttpMessageConverter} (when JAXB is present)</li>
      *     <li>{@linkplain MappingJackson2HttpMessageConverter} (when Jackson 2.x is present)</li>
+     *     <li>{@linkplain FastJsonHttpMessageConverter} (when Fastjson is present)</li>
      *     <li>{@linkplain MappingJacksonHttpMessageConverter} (when Jackson 1.x is present and 2.x not)</li>
      * </ul>
      *
@@ -96,6 +108,8 @@ public abstract class HttpMessageConverterUtils {
         if (isJackson2Present()) {
             converters.add(new MappingJackson2HttpMessageConverter());
 
+        } else if(isFastJsonPresent()) {
+            converters.add(new FastJsonHttpMessageConverter());
         } else if (isJacksonPresent()) {
             converters.add(new MappingJacksonHttpMessageConverter());
         }
